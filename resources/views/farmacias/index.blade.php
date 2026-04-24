@@ -68,7 +68,7 @@
                     <!-- BOTÓN -->
                     <button type="submit"
                         class="h-9 px-4 inline-flex items-center justify-center
-                               bg-black text-white text-sm font-medium
+                               bg-black text-black text-sm font-medium
                                rounded-lg hover:bg-gray-800 transition">
                         Filtrar
                     </button>
@@ -97,8 +97,6 @@
                                 </th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Turno hoy
                                 </th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Rotación
-                                </th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Estado
                                 </th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Registro
@@ -121,7 +119,7 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                class="w-6 h-6 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
                                                 @if ($logoExists)
                                                     <img src="{{ asset($logoPath) }}" class="w-full h-full object-cover"
                                                         alt="logo">
@@ -183,25 +181,7 @@
                                         @endif
                                     </td>
 
-                                    {{-- ROTACIÓN --}}
-                                    <td class="px-6 py-4">
-                                        @php
-                                            $rotaciones = $farmacia->rotaciones()->where('activo', true)->get();
-                                        @endphp
-                                        @if ($rotaciones->count() > 0)
-                                            <button onclick="openRotacionModal({{ $farmacia->id }})"
-                                                class="inline-flex items-center gap-1.5 text-xs text-emerald-600 hover:text-emerald-700 font-medium">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
-                                                </svg>
-                                                {{ $rotaciones->count() }} reglas
-                                            </button>
-                                        @else
-                                            <span class="text-xs text-gray-400">Sin configuración</span>
-                                        @endif
-                                    </td>
+
 
                                     {{-- ESTADO --}}
                                     <td class="px-6 py-4">
@@ -264,77 +244,7 @@
                                     </td>
                                 </tr>
 
-                                {{-- MODAL DE ROTACIÓN --}}
-                                <div id="modal-rotacion-{{ $farmacia->id }}"
-                                    class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-                                    onclick="if(event.target === this) closeRotacionModal({{ $farmacia->id }})">
-                                    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-                                        <div
-                                            class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
-                                            <div>
-                                                <h3 class="text-lg font-bold text-gray-900">Reglas de rotación</h3>
-                                                <p class="text-xs text-gray-500 mt-0.5">{{ $farmacia->nombre }}</p>
-                                            </div>
-                                            <button onclick="closeRotacionModal({{ $farmacia->id }})"
-                                                class="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        <div class="p-6 max-h-96 overflow-y-auto">
-                                            @if ($farmacia->rotaciones->count())
-                                                <div class="space-y-2">
-                                                    @foreach ($farmacia->rotaciones as $rotacion)
-                                                        <div
-                                                            class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                                            <div>
-                                                                <p class="text-sm font-medium text-gray-900">
-                                                                    {{ $rotacion->dia_nombre }}
-                                                                </p>
-                                                                @if ($rotacion->semana_mes)
-                                                                    <p class="text-xs text-gray-500">
-                                                                        {{ $rotacion->semana_nombre }}</p>
-                                                                @endif
-                                                                @if ($rotacion->fecha_especifica)
-                                                                    <p class="text-xs text-gray-500">
-                                                                        {{ $rotacion->fecha_especifica->format('d/m/Y') }}
-                                                                    </p>
-                                                                @endif
-                                                            </div>
-                                                            <form method="POST"
-                                                                action="{{ route('farmacias.destroyRotacion', $rotacion->id) }}"
-                                                                onsubmit="event.preventDefault(); confirmDeleteRotacion(this)">
-                                                                @csrf @method('DELETE')
-                                                                <button type="submit"
-                                                                    class="p-1 text-gray-400 hover:text-red-600 transition"
-                                                                    title="Eliminar regla">
-                                                                    <svg class="w-4 h-4" fill="none"
-                                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round" stroke-width="2"
-                                                                            d="M6 18L18 6M6 6l12 12" />
-                                                                    </svg>
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            @else
-                                                <p class="text-center text-gray-500 py-8">No hay reglas de rotación
-                                                    configuradas</p>
-                                            @endif
-                                        </div>
-                                        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
-                                            <button onclick="closeRotacionModal({{ $farmacia->id }})"
-                                                class="w-full px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition">
-                                                Cerrar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+
                             @empty
                                 <tr>
                                     <td colspan="8" class="px-6 py-16 text-center">
@@ -375,32 +285,5 @@
                 form.submit();
             }
         }
-
-        function confirmDeleteRotacion(form) {
-            if (confirm('¿Eliminar esta regla de rotación?')) {
-                form.submit();
-            }
-        }
-
-        function openRotacionModal(id) {
-            const modal = document.getElementById('modal-rotacion-' + id);
-            if (modal) modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeRotacionModal(id) {
-            const modal = document.getElementById('modal-rotacion-' + id);
-            if (modal) modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                document.querySelectorAll('[id^="modal-rotacion-"]').forEach(modal => {
-                    modal.classList.add('hidden');
-                });
-                document.body.style.overflow = '';
-            }
-        });
     </script>
 </x-app-layout>

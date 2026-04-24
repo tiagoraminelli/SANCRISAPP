@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FarmaciaTurno;
 use App\Models\FarmaciaRotacion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 
 class FarmaciaTurnoController extends Controller
@@ -78,7 +79,7 @@ class FarmaciaTurnoController extends Controller
                 'horario_apertura' => 'nullable|date_format:H:i',
                 'horario_cierre' => 'nullable|date_format:H:i|after:horario_apertura',
                 'descripcion' => 'nullable|string',
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
                 'activo' => 'nullable|boolean',
             ], [
                 'nombre.required' => 'El nombre de la farmacia es obligatorio.',
@@ -110,7 +111,7 @@ class FarmaciaTurnoController extends Controller
 
             return redirect()
                 ->route('farmacias.index')
-                ->with('success', '✅ Farmacia creada exitosamente.');
+                ->with('success', 'Farmacia creada exitosamente.');
         } catch (\Exception $e) {
             return redirect()
                 ->back()
@@ -132,25 +133,35 @@ class FarmaciaTurnoController extends Controller
         $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
+        // Obtener mes y año actual
+        $mesActual = now()->month;
+        $anioActual = now()->year;
+
         $diasTurno = [];
         foreach ($farmacia->rotaciones as $rotacion) {
             if ($rotacion->fecha_especifica) {
                 $timestamp = strtotime($rotacion->fecha_especifica);
-                $numeroDia = date('j', $timestamp);
-                $nombreDia = $dias[date('w', $timestamp)];
-                $nombreMes = $meses[date('n', $timestamp) - 1];
-                $anio = date('Y', $timestamp);
+                $mesFecha = date('n', $timestamp);
+                $anioFecha = date('Y', $timestamp);
 
-                $diasTurno[] = [
-                    'fecha' => $rotacion->fecha_especifica,
-                    'texto' => "$nombreDia $numeroDia de $nombreMes $anio",
-                ];
+                // Solo incluir fechas del mes y año actual
+                if ($mesFecha == $mesActual && $anioFecha == $anioActual) {
+                    $numeroDia = date('j', $timestamp);
+                    $nombreDia = $dias[date('w', $timestamp)];
+                    $nombreMes = $meses[$mesFecha - 1];
+                    $anio = date('Y', $timestamp);
+
+                    $diasTurno[] = [
+                        'fecha' => $rotacion->fecha_especifica,
+                        'texto' => "$nombreDia $numeroDia de $nombreMes $anio",
+                    ];
+                }
             }
         }
 
         $diasTurno = collect($diasTurno)->sortBy('fecha');
 
-        return view('farmacias.show', compact('farmacia', 'diasTurno'));
+        return view('farmacias.show', compact('farmacia', 'diasTurno', 'mesActual', 'anioActual'));
     }
 
     /**
@@ -207,6 +218,12 @@ class FarmaciaTurnoController extends Controller
 
             // Subir nuevo logo si existe
             if ($request->hasFile('logo')) {
+                // Eliminar logo anterior si existe
+                if ($farmacia->logo && Storage::disk('public')->exists($farmacia->logo)) {
+                    Storage::disk('public')->delete($farmacia->logo);
+                }
+
+                // Guardar nuevo logo
                 $updateData['logo'] = $request->file('logo')->store('farmacias', 'public');
             }
 
@@ -214,7 +231,7 @@ class FarmaciaTurnoController extends Controller
 
             return redirect()
                 ->route('farmacias.index')
-                ->with('success', '✅ Farmacia actualizada exitosamente.');
+                ->with('success', ' Farmacia actualizada exitosamente.');
         } catch (\Exception $e) {
             return redirect()
                 ->back()

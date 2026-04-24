@@ -1,27 +1,33 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-start justify-between">
+        <div class="flex justify-between items-center">
             <div>
-                <h2 class="text-2xl font-bold text-white tracking-tight">
-                    {{ $farmacia->nombre }}
+                <h2 class="text-2xl font-bold text-white dark:text-gray-900">
+                    {{ $farmacia->nombre }} | #{{ str_pad($farmacia->id, 3, '0', STR_PAD_LEFT) }} |
+                    {{ $farmacia->activo ? 'Activo' : 'Inactivo' }}
                 </h2>
-                <p class="text-sm text-gray-400 mt-1">
-                    Detalle de farmacia de turno
+                <p class="text-sm text-black-500 dark:text-gray-400">
+                    Detalle completo de la farmacia de turno
                 </p>
             </div>
 
-            <div class="flex items-center gap-3">
-                <a href="{{ route('farmacias.edit', $farmacia->id) }}"
-                    class="inline-flex items-center gap-2 px-5 py-2.5
-                      bg-white text-gray-900 text-xs font-semibold uppercase tracking-widest
-                      rounded-xl shadow hover:bg-gray-100 hover:shadow-md transition">
-                    Editar
+            <div class="flex items-center gap-2">
+                <!-- BOTÓN DE ROTACIONES -->
+                <a href="{{ route('farmacias.rotaciones.index', $farmacia->id) }}"
+                    class="px-5 py-2.5 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-gray-800 transition shadow whitespace-nowrap inline-flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Rotaciones
                 </a>
 
+                <!-- BOTÓN DE VOLVER -->
                 <a href="{{ route('farmacias.index') }}"
-                    class="inline-flex items-center gap-2 px-5 py-2.5
-                      bg-white text-gray-900 text-xs font-semibold uppercase tracking-widest
-                      rounded-xl shadow hover:bg-gray-100 hover:shadow-md transition">
+                    class="px-5 py-2.5 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-gray-800 transition shadow whitespace-nowrap inline-flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
                     Volver
                 </a>
             </div>
@@ -50,12 +56,13 @@
 
                 <div class="p-6">
                     <div class="flex items-start gap-6">
+                        {{-- Logo con tamaño máximo w-7 h-7 --}}
                         <div
-                            class="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                            class="w-6 h-6 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
                             @if ($farmacia->logo_url)
                                 <img src="{{ $farmacia->logo_url }}" class="w-full h-full object-cover" alt="logo">
                             @else
-                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                                         d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -110,9 +117,9 @@
                 </div>
             </div>
 
-            {{-- DÍAS DE TURNO --}}
+            {{-- DÍAS DE TURNO CON BOTÓN PARA AGREGAR --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,6 +132,17 @@
                             <p class="text-xs text-gray-500">Fechas en que esta farmacia está de turno</p>
                         </div>
                     </div>
+
+
+
+                    {{-- Botón para agregar nuevo horario --}}
+                    <a href="{{ route('farmacias.rotaciones.create', $farmacia->id) }}"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-black text-xs font-semibold rounded-lg hover:bg-emerald-700 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Nuevo horario
+                    </a>
                 </div>
 
                 <div class="p-6">
@@ -136,8 +154,8 @@
                                     <div class="flex items-center gap-4">
                                         <div
                                             class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center group-hover:bg-emerald-200 transition">
-                                            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
+                                            <svg class="w-6 h-6 text-emerald-600" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
@@ -168,7 +186,6 @@
                     @endif
                 </div>
             </div>
-
         </div>
     </div>
 </x-app-layout>

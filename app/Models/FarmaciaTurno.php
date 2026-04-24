@@ -110,4 +110,19 @@ class FarmaciaTurno extends Model
             })
             ->exists();
     }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (!$this->logo) {
+            return null;
+        }
+
+        // Si ya es una URL completa, devolverla
+        if (filter_var($this->logo, FILTER_VALIDATE_URL)) {
+            return $this->logo;
+        }
+
+        // Construir URL desde storage
+        return asset('storage/' . $this->logo);
+    }
 }

@@ -5,6 +5,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessUserController;
 use App\Http\Controllers\FarmaciaTurnoController;
+use App\Http\Controllers\FarmaciaRotacionController;
+use App\Http\Controllers\TransporteController;
+use App\Http\Controllers\RutaController;
+use App\Http\Controllers\HorarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +17,7 @@ use App\Http\Controllers\FarmaciaTurnoController;
 */
 
 // Pública
-Route::get('/publicas', function () {
+Route::get('/', function () {
     return view('welcome');
 });
 
@@ -49,14 +53,38 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{id}', 'update')->name('update');
             Route::delete('/{id}', 'destroy')->name('destroy');
 
-            // Rotación de turnos
-            Route::post('/{id}/rotacion', 'storeRotacion')->name('storeRotacion');
-            Route::delete('/rotacion/{id}', 'destroyRotacion')->name('destroyRotacion');
-
             // API / Widget
             Route::get('/turno-hoy', 'turnoHoy')->name('turnoHoy');
             Route::get('/{id}/eventos-turnos', 'eventosTurnos')->name('farmacias.eventosTurnos');
         });
+    });
+
+    // ======================
+    // Rotaciones de Farmacias
+    // ======================
+    Route::prefix('farmacias')->name('farmacias.')->group(function () {
+        Route::controller(FarmaciaRotacionController::class)->group(function () {
+            Route::get('/{farmacia_id}/rotaciones', 'index')->name('rotaciones.index');
+            Route::get('/{farmacia_id}/rotaciones/create', 'create')->name('rotaciones.create');
+            Route::post('/{farmacia_id}/rotaciones', 'store')->name('rotaciones.store');
+            Route::get('/rotaciones/{id}/edit', 'edit')->name('rotaciones.edit');
+            Route::put('/rotaciones/{id}', 'update')->name('rotaciones.update');
+            Route::delete('/rotaciones/{id}', 'destroy')->name('rotaciones.destroy');
+        });
+    });
+
+    // ======================
+    // Servicios Públicos
+    // ======================
+    Route::prefix('servicios')->name('servicios.')->group(function () {
+        // Transportes
+        Route::resource('transportes', TransporteController::class);
+        // Rutas
+        Route::get('rutas/transporte/{transporte}', [RutaController::class, 'index'])->name('rutas.por_transporte');
+        Route::resource('rutas', RutaController::class);
+        // Horarios
+        Route::get('horarios/ruta/{ruta}', [HorarioController::class, 'index'])->name('horarios.por_ruta');
+        Route::resource('horarios', HorarioController::class);
     });
 
     // ======================
